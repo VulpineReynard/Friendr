@@ -17,18 +17,35 @@ const app = require('express')();
 app.get('/', (req, res) => res.status(200).json({ message: "Good to go." }));
 
 // Route Handlers
-const { getAllScreams, postOneScream } = require('./handlers/screams.js');
-const { signup, login, uploadImage, addUserDetails } = require('./handlers/users.js');
+const { 
+  getAllScreams, 
+  postOneScream,
+  getScream
+} = require('./handlers/screams.js');
+const { 
+  signup, 
+  login, 
+  uploadImage, 
+  addUserDetails,
+  getAuthenticatedUser 
+} = require('./handlers/users.js');
 
 // Scream Routes
 app.get('/screams', getAllScreams);
 app.post('/scream', FBAuth, postOneScream);
+app.get('/scream/:screamId', getScream);
+// TODO: delete scream
+// TODO: like a scream
+// TODO: unlike a scream
+// TODO: comment on scream
+
 
 // SignUp/Login Routes
 app.post('/signup', signup);
 app.post('/login', login);
 app.post('/user/image', FBAuth, uploadImage);
 app.post('/user', FBAuth, addUserDetails);
+app.get('/user', FBAuth, getAuthenticatedUser);
 
 const functions = require('firebase-functions');
 exports.api = functions.https.onRequest(app);

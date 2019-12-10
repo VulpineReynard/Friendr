@@ -19,5 +19,35 @@ let db = {
       likeCount: 5,
       commentCount: 2
     }
+  ],
+  comments: [
+    {
+      userHandle: 'user',
+      screamId: 'askjdfhjkb35434n33dn3',
+      body: 'This is a comment',
+      createdAt: '2019-12-09T18:39:33.034Z'
+    }
   ]
-}
+};
+
+const userDetails = {
+  credentials: {
+    userId: 'AKJSHDK89234kjHAKJHDLASD',
+    email: 'user@gmail.com',
+    handle: 'user',
+    createdAt: '2019-12-09T18:39:33.034Z',
+    imageUrl: 'image/asdfbnonjesrg/asdfjkhndkvbn',
+    website: 'https://user.com',
+    location: 'London, UK'
+   },
+   likes: [
+     {
+       userHandle: 'user',
+       screamId: 'hhsjidfhj4h545basd'
+     },
+     {
+       userHandle: 'user',
+       screamId: '38934hbfbbkbjh34b54'
+     }
+   ]
+ }
