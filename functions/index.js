@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 const firebase = require('firebase');
 firebase.initializeApp(config);
 
-const serviceAccount = require("C:/Users/milar/Downloads/friendr-key.json");
+const serviceAccount = require('./util/friendr-key.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://friendr-5bde1.firebaseio.com"

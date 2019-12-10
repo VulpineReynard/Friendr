@@ -65,4 +65,4 @@ node_modules/
 .env
 
 # keys
-keys/
+friendr-key.json
