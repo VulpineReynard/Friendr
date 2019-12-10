@@ -1,147 +1,34 @@
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+const config = require('./util/config.js');
 const firebase = require('firebase');
-const app = require('express')();
+firebase.initializeApp(config);
 
-serviceAccount = require("C:/Users/milar/Downloads/friendr-key.json");
-
+const admin = require('firebase-admin');
+const serviceAccount = require("C:/Users/milar/Downloads/friendr-key.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://friendr-5bde1.firebaseio.com"
 });
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBw5jw70KpTD7cjUy-v1R6w8lNAhkrWtYY",
-  authDomain: "friendr-5bde1.firebaseapp.com",
-  databaseURL: "https://friendr-5bde1.firebaseio.com",
-  projectId: "friendr-5bde1",
-  storageBucket: "friendr-5bde1.appspot.com",
-  messagingSenderId: "127324395138",
-  appId: "1:127324395138:web:7e600d65a1babef86c869b",
-  measurementId: "G-ZHRLSY7T24"
-};
-firebase.initializeApp(firebaseConfig);
+// MIDDLEWARE //
+const FBAuth = require('./util/fbAuth.js');
 
-const db = admin.firestore();
+const app = require('express')();
+// Sanity Check
+app.get('/', (req, res) => res.status(200).json({ message: "Good to go." }));
 
-app.get('/', (req, res) => {
-  return res.status(200).json({ message: "Good to go." })
-})
+// Route Handlers
+const { getAllScreams, postOneScream } = require('./handlers/screams.js');
+const { signup, login, uploadImage, addUserDetails } = require('./handlers/users.js');
 
-app.get('/screams', (req, res) => {
-  db
-    .collection('screams')
-    .orderBy('createdAt', 'desc')
-    .get()
-    .then(data => {
-      let screams = [];
-      data.forEach(doc => {
-        screams.push({
-          screamId: doc.id,
-          body: doc.data().body,
-          userHandle: doc.data().userHandle,
-          createdAt: new Date().toISOString()
-        });
-      });
-      return res.json(screams);
-    })
+// Scream Routes
+app.get('/screams', getAllScreams);
+app.post('/scream', FBAuth, postOneScream);
 
-    .catch(err => {
-      console.error(err);
-    })
-})
+// SignUp/Login Routes
+app.post('/signup', signup);
+app.post('/login', login);
+app.post('/user/image', FBAuth, uploadImage);
+app.post('/user', FBAuth, addUserDetails);
 
-// Post new scream
-app.post('/scream', (req, res) => {
-  const newScream = {
-    body: req.body.body,
-    userHandle: req.body.userHandle,
-    createdAt: admin.firestore.Timestamp.fromDate(new Date())
-  };
-
-  db
-    .collection('screams')
-    .add(newScream)
-    .then(doc => {
-      res.json({ message: `Document ${doc.id} created successfully.` })
-    })
-    .catch(err => {
-      res.status(500).json({ error: 'Something went wrong.' });
-      // console.error(err);
-    })
-})
-
-const isEmail = string => {
-  const regEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  if (string.match(regEx)) return true;
-  else return false;
-}
-
-const isEmpty = string => {
-  if (string.trim() === '') return true;
-  else return false;
-}
-
-// Signup Route
-app.post('/signup', (req, res) => {
-  const newUser = {
-    email: req.body.email,
-    password: req.body.password,
-    confirmPassword: req.body.confirmPassword,
-    handle: req.body.handle
-  }
-
-  let errors = {};
-
-  if (isEmpty(newUser.email)) errors.email = "Must not be empty.";
-  else if (!isEmail(newUser.email)) errors.email = "Must be a valid email address.";
-
-  if (isEmpty(newUser.password)) errors.password = "Must not be empty.";
-  if(newUser.password !== newUser.confirmPassword) errors.confirmPassword = "Passwords must match.";
-
-  if (isEmpty(newUser.handle)) errors.handle = "Must not be empty.";
-
-  if (Object.keys(errors).length > 0) return res.status(400).json(errors);
-
-  //TODO: Validate data
-  let token, userId;
-  db.doc(`/users/${newUser.handle}`).get()
-    .then(doc => {
-      if (doc.exists) {
-        // console.log(doc.exists)
-        return res.status(400).json({ handle: 'This handle is already taken.' })
-      } else {
-        // console.log(doc.exists)
-        return firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password);
-      }
-    })
-    .then(data => {
-      userId = data.user.uid;
-      return data.user.getIdToken();
-    })
-    .then(idToken => {
-      // console.log(idToken)
-      token = idToken;
-      const userCredentials = {
-        handle: newUser.handle,
-        email: newUser.email,
-        createdAt: new Date().toISOString(),
-        userId
-      };
-      // console.log(userCredentials)
-      return db.doc(`/users/${newUser.handle}`).set(userCredentials);
-    })
-    .then(() => {
-      return res.status(201).json({ token })
-    })
-    .catch(err => {
-      // console.error(err);
-      if (err.code = 'auth/email-already-in-use') {
-        return res.status(400).json({ email: 'Email is already in use.' });
-      } else {
-        return res.status(500).json({ error: err.code });
-      }
-    })
-})
-
+const functions = require('firebase-functions');
 exports.api = functions.https.onRequest(app);
