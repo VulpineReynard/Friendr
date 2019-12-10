@@ -27,6 +27,16 @@ let db = {
       body: 'This is a comment',
       createdAt: '2019-12-09T18:39:33.034Z'
     }
+  ],
+  notifications: [
+    {
+      recipient: 'justin',
+      sender: 'john',
+      read: 'true | false',
+      screamId: 'asdkjfhkjoh34jg34jh',
+      type: 'like | comment',
+      createdAt: '2019-12-09T18:39:33.034Z'
+    }
   ]
 };
 
