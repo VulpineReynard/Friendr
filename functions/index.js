@@ -1,8 +1,8 @@
 const config = require('./util/config.js');
+const admin = require('firebase-admin');
 const firebase = require('firebase');
 firebase.initializeApp(config);
 
-const admin = require('firebase-admin');
 const serviceAccount = require("C:/Users/milar/Downloads/friendr-key.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -20,7 +20,8 @@ app.get('/', (req, res) => res.status(200).json({ message: "Good to go." }));
 const { 
   getAllScreams, 
   postOneScream,
-  getScream
+  getScream,
+  commentOnScream
 } = require('./handlers/screams.js');
 const { 
   signup, 
@@ -37,7 +38,7 @@ app.get('/scream/:screamId', getScream);
 // TODO: delete scream
 // TODO: like a scream
 // TODO: unlike a scream
-// TODO: comment on scream
+app.post('/scream/:screamId/comment', FBAuth, commentOnScream);
 
 
 // SignUp/Login Routes
